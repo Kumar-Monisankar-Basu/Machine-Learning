@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.com/SuperKogito/Voice-based-gender-recognition.svg?branch=master)](https://travis-ci.com/SuperKogito/Voice-based-gender-recognition)
-
 # Voice-based-gender-recognition
 Voice based gender recognition using:
   - **The Free ST American English Corpus dataset (SLR45)**
@@ -28,9 +26,57 @@ A Gaussian Mixture Model (GMM) is a parametric probability density function repr
   <img src="genderspeaker.png" width="700"/>
 </p>
 
----------------  
-- #### For a more detailed explanation, please refer to this [blog](https://superkogito.github.io/blog/VoiceBasedGenderRecognition.html) that I have written.
------------------
+# Data Formatting 
+ Once you download your data-set, you will need to split it into two different sets:
+
+    Training set: This set will be used to train the gender models.
+    
+    Testing set: This one will serve for testing the accuracy of the gender recognition.
+
+I usually use 2/3 of the the data for the training and 1/3 for the testing, but you can adjust that to your needs/ wishes. The code provides an option for running the whole cycle using "Run.py" or you can go step by step and for the data management just run the following in your terminal:
+
+#Voice features extraction
+The Mel-Frequency Cepstrum Coefficients (MFCC) are used here, since they deliver the best results in speaker verification . MFCCs are commonly derived as follows:
+
+      1. Take the Fourier transform of (a windowed excerpt of) a signal.
+      
+      2. Map the powers of the spectrum obtained above onto the mel scale, using triangular overlapping windows.
+      
+      3. Take the logs of the powers at each of the mel frequencies.
+      
+      4. Take the discrete cosine transform of the list of mel log powers, as if it were a signal.
+      
+      5. The MFCCs are the amplitudes of the resulting spectrum.
+
+To extract MFCC features I usually use the python_speech_features library, it is simple to use and well documented:
+```python
+#FeaturesExtraction.py
+ 1 import numpy as np
+ 2 from sklearn import preprocessing
+ 3 from scipy.io.wavfile import read
+ 4 from python_speech_features import mfcc
+ 5 from python_speech_features import delta
+ 6
+ 7 def extract_features(audio_path):
+ 8     """
+ 9     Extract MFCCs, their deltas and double deltas from an audio, performs CMS.
+10
+11     Args:
+12         audio_path (str) : path to wave file without silent moments.
+13     Returns:
+14         (array) : Extracted features matrix.
+15     """
+16     rate, audio  = read(audio_path)
+17     mfcc_feature = mfcc(audio, rate, winlen = 0.05, winstep = 0.01, numcep = 5, nfilt = 30,
+18                         nfft = 512, appendEnergy = True)
+19
+20     mfcc_feature  = preprocessing.scale(mfcc_feature)
+21     deltas        = delta(mfcc_feature, 2)
+22     double_deltas = delta(deltas, 2)
+23     combined      = np.hstack((mfcc_feature, deltas, double_deltas))
+24 return combined
+```
+
 
 ## Dependencies
 This script require the follwing modules/libraries:
