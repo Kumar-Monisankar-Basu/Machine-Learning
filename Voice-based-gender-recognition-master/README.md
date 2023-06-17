@@ -20,6 +20,9 @@ MFCCs are commonly derived as follows:
 #### Gaussian Mixture Model
 According to D. Reynolds in [Gaussian_Mixture_Models](https://pdfs.semanticscholar.org/734b/07b53c23f74a3b004d7fe341ae4fce462fc6.pdf):
 A Gaussian Mixture Model (GMM) is a parametric probability density function represented as a weighted sum of Gaussian component densities. GMMs are commonly used as a parametric model of the probability distribution of continuous measurements or features in a biometric system, such as vocal-tract related spectral features in a speaker recognition system. GMM parameters are estimated from training data using the iterative Expectation-Maximization (EM) algorithm or Maximum A Posteriori(MAP) estimation from a well-trained prior model.
+<p align="center">
+  <img src="gmm.png" width="700" style="background-color:white;"/>
+</p>
 
 #### Workflow graph
 <p align="center">
