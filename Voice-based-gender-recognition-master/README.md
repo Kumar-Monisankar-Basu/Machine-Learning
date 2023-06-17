@@ -21,8 +21,39 @@ MFCCs are commonly derived as follows:
 According to D. Reynolds in [Gaussian_Mixture_Models](https://pdfs.semanticscholar.org/734b/07b53c23f74a3b004d7fe341ae4fce462fc6.pdf):
 A Gaussian Mixture Model (GMM) is a parametric probability density function represented as a weighted sum of Gaussian component densities. GMMs are commonly used as a parametric model of the probability distribution of continuous measurements or features in a biometric system, such as vocal-tract related spectral features in a speaker recognition system. GMM parameters are estimated from training data using the iterative Expectation-Maximization (EM) algorithm or Maximum A Posteriori(MAP) estimation from a well-trained prior model.
 <p align="center">
-  <img src="gmm.png" width="700" style="background-color:white;"/>
+  <img src="gmm.jpg" width="700"/>
 </p>
+
+To train a Gaussian mixture models based on some collected features, you can use scikit-learn-library specifically the scikit-learn-gmm:
+```python
+#GmmGeneration.py
+ import os
+ import pickle
+ from sklearn.mixture import GMM
+ 
+ 
+ def save_gmm(gmm, name):
+     """ Save Gaussian mixture model using pickle.
+         Args:
+             gmm        : Gaussian mixture model.
+            name (str) : File name.
+    """
+    filename = name + ".gmm"
+    with open(filename, 'wb') as gmm_file:
+        pickle.dump(gmm, gmm_file)
+    print ("%5s %10s" % ("SAVING", filename,))
+
+...
+# get gender_voice_features using FeaturesExtraction
+# generate gaussian mixture models
+gender_gmm = GMM(n_components = 16, n_iter = 200, covariance_type = 'diag', n_init = 3)
+# fit features to models
+gender_gmm.fit(gender_voice_features)
+# save gmm
+save_gmm(gender_gmm, "gender")
+```
+
+
 
 #### Workflow graph
 <p align="center">
@@ -54,31 +85,35 @@ The Mel-Frequency Cepstrum Coefficients (MFCC) are used here, since they deliver
 To extract MFCC features I usually use the python_speech_features library, it is simple to use and well documented:
 ```python
 #FeaturesExtraction.py
- 1 import numpy as np
- 2 from sklearn import preprocessing
- 3 from scipy.io.wavfile import read
- 4 from python_speech_features import mfcc
- 5 from python_speech_features import delta
- 6
- 7 def extract_features(audio_path):
- 8     """
- 9     Extract MFCCs, their deltas and double deltas from an audio, performs CMS.
-10
-11     Args:
-12         audio_path (str) : path to wave file without silent moments.
-13     Returns:
-14         (array) : Extracted features matrix.
-15     """
-16     rate, audio  = read(audio_path)
-17     mfcc_feature = mfcc(audio, rate, winlen = 0.05, winstep = 0.01, numcep = 5, nfilt = 30,
-18                         nfft = 512, appendEnergy = True)
-19
-20     mfcc_feature  = preprocessing.scale(mfcc_feature)
-21     deltas        = delta(mfcc_feature, 2)
-22     double_deltas = delta(deltas, 2)
-23     combined      = np.hstack((mfcc_feature, deltas, double_deltas))
-24 return combined
+  import numpy as np
+  from sklearn import preprocessing
+  from scipy.io.wavfile import read
+  from python_speech_features import mfcc
+  from python_speech_features import delta
+ 
+  def extract_features(audio_path):
+      """
+      Extract MFCCs, their deltas and double deltas from an audio, performs CMS.
+
+     Args:
+         audio_path (str) : path to wave file without silent moments.
+     Returns:
+         (array) : Extracted features matrix.
+     """
+     rate, audio  = read(audio_path)
+     mfcc_feature = mfcc(audio, rate, winlen = 0.05, winstep = 0.01, numcep = 5, nfilt = 30,
+                         nfft = 512, appendEnergy = True)
+
+     mfcc_feature  = preprocessing.scale(mfcc_feature)
+     deltas        = delta(mfcc_feature, 2)
+     double_deltas = delta(deltas, 2)
+     combined      = np.hstack((mfcc_feature, deltas, double_deltas))
+ return combined
 ```
+
+# Gender identification:
+The identification is done over three steps: first you retrieve the voice features, then you compute their likelihood of belonging to a certain gender and finally your compare both scores and make a decision on the probable gender. The computation of the scores is done as follows
+
 
 
 ## Dependencies
